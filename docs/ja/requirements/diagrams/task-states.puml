@@ -1,0 +1,44 @@
+@startuml task-states
+title Task states (draft)
+skinparam shadowing false
+hide empty description
+
+state "Task" as Task {
+  state Draft
+  state Open {
+    state "Matching" as Matching
+    state "Assigned" as Assigned {
+      state "Awaiting evidence" as AwaitingEvidence
+      state "In review" as InReview
+      state Approved
+      state Rejected
+      state "Evidence timeout" as EvidenceTimeout
+      state "Review timeout" as ReviewTimeout
+      state Confirmed
+
+      [*] --> AwaitingEvidence
+      AwaitingEvidence --> InReview : tasker submits evidence
+      AwaitingEvidence --> EvidenceTimeout : due date passes
+      InReview --> Approved : referee approves
+      InReview --> Rejected : referee rejects
+      InReview --> ReviewTimeout : review deadline passes
+      Rejected --> InReview : tasker resubmits\n(once, before due date)
+      Approved --> Confirmed : tasker confirms\nor auto-confirm
+      Rejected --> Confirmed : tasker confirms\nor auto-confirm
+      EvidenceTimeout --> Confirmed : tasker confirms\nor auto-confirm
+      ReviewTimeout --> Confirmed : tasker confirms\nor auto-confirm
+    }
+    state Expired
+
+    [*] --> Matching
+    Matching --> Assigned : referee assigned
+    Assigned --> Matching : referee cancels\n(before cancel deadline)
+    Matching --> Expired : no referee by\nthe matching cutoff
+  }
+  state Closed
+
+  [*] --> Draft
+  Draft --> Open : tasker publishes
+  Open --> Closed : confirmed or expired
+}
+@enduml
