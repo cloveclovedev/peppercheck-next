@@ -1,0 +1,67 @@
+@startuml system
+left to right direction
+skinparam shadowing false
+skinparam defaultTextAlignment center
+skinparam nodesep 40
+skinparam ranksep 60
+skinparam rectangle {
+  RoundCorner 12
+  BackgroundColor white
+  BorderColor black
+}
+skinparam database {
+  BackgroundColor white
+  BorderColor black
+}
+skinparam ArrowColor black
+
+rectangle "Mobile app\n(Flutter: iOS / Android)" as app
+rectangle "Web Browser" as browser
+
+together {
+  rectangle "Firebase Auth" as auth
+  rectangle "Firebase Cloud Messaging" as fcm
+  database "Cloudflare R2" as r2
+}
+
+rectangle "VPS" {
+  rectangle "Caddy" as caddy
+  rectangle "web\n(Go)" as web
+  rectangle "api\n(Go)" as api
+  rectangle "jobs\n(Go)" as jobs
+  database "PostgreSQL" as pg
+  rectangle "backup" as backup
+}
+database "Backblaze B2" as b2
+
+rectangle "RevenueCat" as rc
+rectangle "Google Play Billing" as gplay
+rectangle "App Store" as appstore
+rectangle "Stripe Billing\n(undecided)" as sbilling #line.dashed
+rectangle "Stripe Connect" as sconnect
+
+app --> caddy
+browser --> caddy
+caddy --> api
+caddy --> web
+web --> api
+
+app --> auth
+api --> auth
+api --> fcm
+app --> fcm
+app --> r2
+api --> r2
+
+api --> pg
+jobs --> pg
+pg --> backup
+backup --> b2
+
+app --> rc
+rc --> gplay
+rc --> appstore
+rc ..> sbilling
+api <--> rc : API / webhook
+api <--> sconnect : API / webhook
+@enduml
