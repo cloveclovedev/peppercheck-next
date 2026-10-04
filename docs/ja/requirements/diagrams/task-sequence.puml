@@ -1,0 +1,46 @@
+@startuml task-sequence
+title Task sequence (draft)
+skinparam shadowing false
+skinparam sequenceMessageAlign left
+hide footbox
+
+actor Tasker
+participant PepperCheck as system
+actor Referee
+
+== Create ==
+Tasker -> system : create task\n(title, criteria, due date)
+system -> system : reserve payment
+
+== Matching ==
+system -> Referee : assign task\n(from available referees)
+system -> Tasker : referee assigned
+opt referee cancels before the cancel deadline
+  Referee -> system : cancel
+  system -> Referee : assign another referee
+end
+
+== Execution ==
+opt before the due date
+  Referee -> system : send nudge
+  system -> Tasker : nudge
+end
+system -> Tasker : due date reminder
+Tasker -> system : submit evidence\n(text, images)
+system -> Referee : review requested
+
+== Review ==
+Referee -> system : approve or reject\nwith feedback
+system -> Tasker : review result
+opt rejected, once, before the due date
+  Tasker -> system : resubmit evidence
+  system -> Referee : review requested
+  Referee -> system : approve or reject\nwith feedback
+  system -> Tasker : review result
+end
+
+== Confirm ==
+Tasker -> system : confirm and rate referee
+system -> system : settle payment
+system -> Referee : reward and rating
+@enduml
